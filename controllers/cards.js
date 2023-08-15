@@ -105,7 +105,7 @@ const deleteLike = (req, res) => {
       return res.status(HTTP_STATUS_OK).send(response);
     })
     .catch((err) => {
-      if (err.message === null) {
+      if (err.message === 'InvalidCardId') {
         return res
           .status(HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Запрашиваемый карточка не найдена' });
