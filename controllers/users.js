@@ -25,17 +25,20 @@ const getAllUsers = (req, res) => {
 // получаем конкретного пользователя по id
 const getUserById = (req, res) => {
   return User.findById(req.params.userId)
+    .orFail(new Error('InvalidUserId')) // когда приходит пусто user, создаем ошибку и переходим в блок catch, там ее отлавливаем
     .then((user) => {
-      if (user === null) {
+      return res.status(HTTP_STATUS_OK).send(user);
+    })
+    .catch((err) => {
+      if (err.message === 'InvalidUserId') {
         return res
           .status(HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Запрашиваемый пользователь не найден' });
       }
-      return res.status(HTTP_STATUS_OK).send(user);
-    })
-    .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError
-        || err instanceof mongoose.Error.CastError) {
+      if (
+        err instanceof mongoose.Error.ValidationError
+        || err instanceof mongoose.Error.CastError
+      ) {
         return res
           .status(HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Переданы некорректные данные' });
@@ -54,7 +57,6 @@ const createNewUser = (req, res) => {
       return res.status(HTTP_STATUS_CREATED).send(newUser);
     })
     .catch((err) => {
-      console.log(err.name);
       if (err instanceof mongoose.Error.ValidationError) {
         return res
           .status(HTTP_STATUS_BAD_REQUEST)
@@ -74,15 +76,16 @@ const updateProfile = (req, res) => {
     { name, about },
     { new: true, runValidators: true },
   )
+    .orFail(new Error('InvalidUserId'))
     .then((user) => {
-      if (user === null) {
+      res.status(HTTP_STATUS_OK).send(user);
+    })
+    .catch((err) => {
+      if (err.message === 'InvalidUserId') {
         return res
           .status(HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Запрашиваемый пользователь не найден' });
       }
-      return res.status(HTTP_STATUS_OK).send(user);
-    })
-    .catch((err) => {
       if (
         err instanceof mongoose.Error.CastError
         || err instanceof mongoose.Error.ValidationError
@@ -105,15 +108,16 @@ const updateAvatar = (req, res) => {
     { avatar },
     { new: true, runValidators: true },
   )
+    .orFail(new Error('InvalidUserId'))
     .then((user) => {
-      if (user === null) {
+      return res.status(HTTP_STATUS_OK).send(user);
+    })
+    .catch((err) => {
+      if (err.message === 'InvalidUserId') {
         return res
           .status(HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Запрашиваемый пользователь не найден' });
       }
-      return res.status(HTTP_STATUS_OK).send(user);
-    })
-    .catch((err) => {
       if (
         err instanceof mongoose.Error.CastError
         || err instanceof mongoose.Error.ValidationError

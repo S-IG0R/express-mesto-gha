@@ -44,15 +44,16 @@ const createCard = (req, res) => {
 // удаление карточки
 const deleteCard = (req, res) => {
   return Card.findByIdAndDelete(req.params.cardId)
-    .then((response) => {
-      if (response === null) {
+    .orFail(new Error('InvalidCardId'))
+    .then(() => {
+      return res.status(HTTP_STATUS_OK).send({ message: 'Карточка удалена' });
+    })
+    .catch((err) => {
+      if (err.message === 'InvalidCardId') {
         return res
           .status(HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Запрашиваемая карточка не найдена' });
       }
-      return res.status(HTTP_STATUS_OK).send({ message: 'Пост удален' });
-    })
-    .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
         return res
           .status(HTTP_STATUS_BAD_REQUEST)
@@ -71,15 +72,16 @@ const putLike = (req, res) => {
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
+    .orFail(new Error('InvalidCardId'))
     .then((response) => {
-      if (response === null) {
+      return res.status(HTTP_STATUS_OK).send(response);
+    })
+    .catch((err) => {
+      if (err.message === 'InvalidCardId') {
         return res
           .status(HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Запрашиваемый карточка не найдена' });
       }
-      return res.status(HTTP_STATUS_OK).send(response);
-    })
-    .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
         return res
           .status(HTTP_STATUS_BAD_REQUEST)
@@ -98,15 +100,16 @@ const deleteLike = (req, res) => {
     { $pull: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
+    .orFail(new Error('InvalidCardId'))
     .then((response) => {
-      if (response === null) {
+      return res.status(HTTP_STATUS_OK).send(response);
+    })
+    .catch((err) => {
+      if (err.message === null) {
         return res
           .status(HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Запрашиваемый карточка не найдена' });
       }
-      return res.status(HTTP_STATUS_OK).send(response);
-    })
-    .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
         return res
           .status(HTTP_STATUS_BAD_REQUEST)
