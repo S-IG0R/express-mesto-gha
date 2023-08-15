@@ -34,7 +34,8 @@ const getUserById = (req, res) => {
       return res.status(HTTP_STATUS_OK).send(user);
     })
     .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
+      if (err instanceof mongoose.Error.ValidationError
+        || err instanceof mongoose.Error.CastError) {
         return res
           .status(HTTP_STATUS_BAD_REQUEST)
           .send({ message: 'Переданы некорректные данные' });

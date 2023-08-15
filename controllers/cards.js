@@ -74,7 +74,7 @@ const putLike = (req, res) => {
     .then((response) => {
       if (response === null) {
         return res
-          .status(HTTP_STATUS_BAD_REQUEST)
+          .status(HTTP_STATUS_NOT_FOUND)
           .send({ message: 'Запрашиваемый карточка не найдена' });
       }
       return res.status(HTTP_STATUS_OK).send(response);
