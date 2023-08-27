@@ -45,7 +45,13 @@ const getUserById = (req, res, next) => {
 
 // создаем нового пользователя
 const createNewUser = (req, res, next) => {
-  const { name, about, avatar, email, password } = req.body;
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
   if (!password || !email) {
     throw new BadRequestError('Поля email и password не могут быть пустыми');
   }
@@ -57,10 +63,11 @@ const createNewUser = (req, res, next) => {
       email,
       password: hash,
     })
-      .then(() => {
+      .then((user) => {
         return res
           .status(HTTP_STATUS_CREATED)
-          .send({ message: 'Пользователь успешно зарегистрирован' });
+          .send({ user });
+      // .send({ message: 'Пользователь успешно зарегистрирован' });
       })
       .catch((err) => {
         if (err.code === 11000) {
@@ -141,12 +148,13 @@ const login = (req, res, next) => {
         });
         return res
           .status(HTTP_STATUS_OK)
-          .cookie('jwt', token, {
-            maxAge: 3600000 * 24 * 7,
-            httpOnly: true,
-            sameSite: true,
-          })
-          .end(); // печенье на 7 дней
+          .send({ token });
+        // .cookie('jwt', token, {
+        //   maxAge: 3600000 * 24 * 7,
+        //   httpOnly: true,
+        //   sameSite: true,
+        // })
+        // .end(); // печенье на 7 дней
       });
     })
     .catch(next);
