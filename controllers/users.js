@@ -66,8 +66,12 @@ const createNewUser = (req, res, next) => {
       .then(() => {
         return res
           .status(HTTP_STATUS_CREATED)
-          .send({ name, about, avatar, email });
-      // .send({ message: 'Пользователь успешно зарегистрирован' });
+          .send({
+            name,
+            about,
+            avatar,
+            email,
+          });
       })
       .catch((err) => {
         if (err.code === 11000) {
