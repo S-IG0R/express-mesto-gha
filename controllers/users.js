@@ -63,10 +63,10 @@ const createNewUser = (req, res, next) => {
       email,
       password: hash,
     })
-      .then((user) => {
+      .then(() => {
         return res
           .status(HTTP_STATUS_CREATED)
-          .send({ user });
+          .send({ name, about, avatar, email });
       // .send({ message: 'Пользователь успешно зарегистрирован' });
       })
       .catch((err) => {

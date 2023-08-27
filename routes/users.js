@@ -50,8 +50,8 @@ router.patch(
   '/users/me',
   celebrate({
     body: Joi.object().keys({
-      name: Joi.string(),
-      about: Joi.string(),
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(30),
     }),
     headers: Joi.object()
       .keys({ authorization: Joi.string().required() })

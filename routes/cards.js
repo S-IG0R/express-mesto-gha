@@ -27,7 +27,7 @@ router.post(
     body: Joi.object().keys({
       name: Joi.string().required().min(2).max(30),
       link: Joi.string()
-        .uri({ scheme: [/https?:\/\/.{1,}/g] })
+        .regex(/https?:\/\/.{1,}/)
         .required(),
     }),
     headers: Joi.object()
