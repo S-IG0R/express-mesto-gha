@@ -21,19 +21,31 @@ mongoose
 
 app.use(express.json()); // бодипарсер вместо body-parser
 
-app.post('/signin', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
+app.post(
+  '/signin',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required(),
+    }),
   }),
-}), login);
+  login,
+);
 
-app.post('/signup', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
+app.post(
+  '/signup',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required().min(8),
+      about: Joi.string().max(30),
+      avatar: Joi.string()
+        .regex(/https?:\/\/.{1,}/),
+      name: Joi.string(),
+    }),
   }),
-}), createNewUser);
+  createNewUser,
+);
 
 app.use(auth);
 app.use(router);
@@ -46,6 +58,7 @@ app.use((err, req, res, next) => {
   res.status(statusCode).send({
     message: statusCode === 500 ? 'На сервере произошла ошибка' : message,
   });
+  next();
 });
 
 app.listen(PORT, () => {

@@ -66,7 +66,7 @@ router.patch(
   celebrate({
     body: Joi.object().keys({
       avatar: Joi.string()
-        .uri({ scheme: [/https?:\/\/.{1,}/g] })
+        .regex(/https?:\/\/.{1,}/)
         .required(),
     }),
     headers: Joi.object()

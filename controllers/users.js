@@ -45,13 +45,7 @@ const getUserById = (req, res, next) => {
 
 // создаем нового пользователя
 const createNewUser = (req, res, next) => {
-  const {
-    name,
-    about,
-    avatar,
-    email,
-    password,
-  } = req.body;
+  const { name, about, avatar, email, password } = req.body;
   if (!password || !email) {
     throw new BadRequestError('Поля email и password не могут быть пустыми');
   }
@@ -132,7 +126,8 @@ const login = (req, res, next) => {
   if (!password || !email) {
     throw new BadRequestError('Поля email и password не могут быть пустыми');
   }
-  User.findOne({ email }).select('+password') // select('+password') - добавляет пароль в запрос
+  User.findOne({ email })
+    .select('+password') // select('+password') - добавляет пароль в запрос
     .then((user) => {
       if (!user) {
         throw new UnauthorizedError('Неверно указан email или password');
@@ -144,8 +139,13 @@ const login = (req, res, next) => {
         const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
           expiresIn: '7d', // срок годности 7 дней
         });
-        return res.status(HTTP_STATUS_OK)
-          .cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true, sameSite: true })
+        return res
+          .status(HTTP_STATUS_OK)
+          .cookie('jwt', token, {
+            maxAge: 3600000 * 24 * 7,
+            httpOnly: true,
+            sameSite: true,
+          })
           .end(); // печенье на 7 дней
       });
     })
@@ -154,9 +154,11 @@ const login = (req, res, next) => {
 
 const getCurrentUser = (req, res, next) => {
   const { _id } = req.user;
-  User.findOne({ _id }).then((currentUser) => {
-    res.status(200).send(currentUser);
-  }).catch(next);
+  User.findOne({ _id })
+    .then((currentUser) => {
+      res.status(200).send(currentUser);
+    })
+    .catch(next);
 };
 
 module.exports = {
