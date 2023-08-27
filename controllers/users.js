@@ -1,135 +1,162 @@
 const {
-  HTTP_STATUS_BAD_REQUEST,
-  HTTP_STATUS_OK,
-  HTTP_STATUS_CREATED,
-  HTTP_STATUS_NOT_FOUND,
-  HTTP_STATUS_INTERNAL_SERVER_ERROR,
+  HTTP_STATUS_OK, // 200
+  HTTP_STATUS_CREATED, // 201
 } = require('http2').constants;
 
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const { default: mongoose } = require('mongoose');
 const User = require('../models/user');
 
+const NotFoundError = require('../errors/NotFoundError');
+const BadRequestError = require('../errors/BadRequestError');
+const ConflictError = require('../errors/ConflictError');
+const UnauthorizedError = require('../errors/UnauthorizedError');
+
+const SALT_ROUNDS = 12;
+const JWT_SECRET = 'secret_key';
+
 // получаем всех пользователей
-const getAllUsers = (req, res) => {
+const getAllUsers = (req, res, next) => {
   return User.find({})
     .then((users) => {
       return res.status(HTTP_STATUS_OK).send(users);
     })
-    .catch(() => {
-      return res
-        .status(HTTP_STATUS_INTERNAL_SERVER_ERROR)
-        .send({ message: 'Ошибка на сервере' });
-    });
+    .catch(next);
 };
 
 // получаем конкретного пользователя по id
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   return User.findById(req.params.userId)
-    .orFail(new Error('InvalidUserId')) // когда приходит пусто user, создаем ошибку и переходим в блок catch, там ее отлавливаем
+    .orFail(new NotFoundError('Запрашиваемый пользователь не найден')) // когда приходит пусто user, создаем ошибку и переходим в блок catch, там ее отлавливаем
     .then((user) => {
       return res.status(HTTP_STATUS_OK).send(user);
     })
     .catch((err) => {
-      if (err.message === 'InvalidUserId') {
-        return res
-          .status(HTTP_STATUS_NOT_FOUND)
-          .send({ message: 'Запрашиваемый пользователь не найден' });
-      }
       if (
         err instanceof mongoose.Error.ValidationError
         || err instanceof mongoose.Error.CastError
       ) {
-        return res
-          .status(HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Переданы некорректные данные' });
+        next(new BadRequestError('Переданы некорректные данные'));
       }
-      return res
-        .status(HTTP_STATUS_INTERNAL_SERVER_ERROR)
-        .send({ message: 'Ошибка на сервере' });
+      next(err);
     });
 };
 
 // создаем нового пользователя
-const createNewUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  return User.create({ name, about, avatar })
-    .then((newUser) => {
-      return res.status(HTTP_STATUS_CREATED).send(newUser);
+const createNewUser = (req, res, next) => {
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
+  if (!password || !email) {
+    throw new BadRequestError('Поля email и password не могут быть пустыми');
+  }
+  bcrypt.hash(password, SALT_ROUNDS, (error, hash) => {
+    User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
     })
-    .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
+      .then(() => {
         return res
-          .status(HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Переданы некорректные данные' });
-      }
-      return res
-        .status(HTTP_STATUS_INTERNAL_SERVER_ERROR)
-        .send({ message: 'Ошибка на сервере' });
-    });
+          .status(HTTP_STATUS_CREATED)
+          .send({ message: 'Пользователь успешно зарегистрирован' });
+      })
+      .catch((err) => {
+        if (err.code === 11000) {
+          next(new ConflictError('Такой пользователь уже зарегистрирован'));
+        }
+        if (err instanceof mongoose.Error.ValidationError) {
+          next(new BadRequestError('Переданы некорректные данные'));
+        }
+        next(err);
+      });
+  });
 };
 
 // обновляем профиль пользователя
-const updateProfile = (req, res) => {
+const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   return User.findByIdAndUpdate(
     req.user._id,
     { name, about },
     { new: true, runValidators: true },
   )
-    .orFail(new Error('InvalidUserId'))
+    .orFail(new NotFoundError('Запрашиваемый пользователь не найден'))
     .then((user) => {
       res.status(HTTP_STATUS_OK).send(user);
     })
     .catch((err) => {
-      if (err.message === 'InvalidUserId') {
-        return res
-          .status(HTTP_STATUS_NOT_FOUND)
-          .send({ message: 'Запрашиваемый пользователь не найден' });
-      }
       if (
         err instanceof mongoose.Error.CastError
         || err instanceof mongoose.Error.ValidationError
       ) {
-        return res
-          .status(HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Переданы некорректные данные' });
+        next(new BadRequestError('Переданы некорректные данные'));
       }
-      return res
-        .status(HTTP_STATUS_INTERNAL_SERVER_ERROR)
-        .send({ message: 'Ошибка на сервере' });
+      next(err);
     });
 };
 
 // обновляем аватар пользователя
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   return User.findByIdAndUpdate(
     req.user._id,
     { avatar },
     { new: true, runValidators: true },
   )
-    .orFail(new Error('InvalidUserId'))
+    .orFail(new NotFoundError('Запрашиваемый пользователь не найден'))
     .then((user) => {
       return res.status(HTTP_STATUS_OK).send(user);
     })
     .catch((err) => {
-      if (err.message === 'InvalidUserId') {
-        return res
-          .status(HTTP_STATUS_NOT_FOUND)
-          .send({ message: 'Запрашиваемый пользователь не найден' });
-      }
       if (
         err instanceof mongoose.Error.CastError
         || err instanceof mongoose.Error.ValidationError
       ) {
-        return res
-          .status(HTTP_STATUS_BAD_REQUEST)
-          .send({ message: 'Переданы некорректные данные' });
+        next(new BadRequestError('Переданы некорректные данные'));
       }
-      return res
-        .status(HTTP_STATUS_INTERNAL_SERVER_ERROR)
-        .send({ message: 'Ошибка на сервере' });
+      next(err);
     });
+};
+
+// залогиниваемся
+const login = (req, res, next) => {
+  const { email, password } = req.body;
+  if (!password || !email) {
+    throw new BadRequestError('Поля email и password не могут быть пустыми');
+  }
+  User.findOne({ email }).select('+password') // select('+password') - добавляет пароль в запрос
+    .then((user) => {
+      if (!user) {
+        throw new UnauthorizedError('Неверно указан email или password');
+      }
+      return bcrypt.compare(password, user.password).then((matched) => {
+        if (!matched) {
+          throw new UnauthorizedError('Неверно указан email или password');
+        }
+        const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+          expiresIn: '7d', // срок годности 7 дней
+        });
+        return res.status(HTTP_STATUS_OK)
+          .cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true, sameSite: true })
+          .end(); // печенье на 7 дней
+      });
+    })
+    .catch(next);
+};
+
+const getCurrentUser = (req, res, next) => {
+  const { _id } = req.user;
+  User.findOne({ _id }).then((currentUser) => {
+    res.status(200).send(currentUser);
+  }).catch(next);
 };
 
 module.exports = {
@@ -138,4 +165,6 @@ module.exports = {
   createNewUser,
   updateProfile,
   updateAvatar,
+  login,
+  getCurrentUser,
 };

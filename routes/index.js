@@ -1,15 +1,12 @@
-const { HTTP_STATUS_NOT_FOUND } = require('http2').constants;
-
 const router = require('express').Router();
 const userRouter = require('./users');
 const cardRouter = require('./cards');
+const NotFoundError = require('../errors/NotFoundError');
 
 router.use(userRouter);
 router.use(cardRouter);
-router.use('*', (req, res) => {
-  res
-    .status(HTTP_STATUS_NOT_FOUND)
-    .send({ message: 'Обращение к несуществующему пути' });
+router.use('*', (req, res, next) => {
+  next(new NotFoundError('Обращение к несуществующему пути'));
 });
 
 module.exports = router;
