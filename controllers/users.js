@@ -63,14 +63,14 @@ const createNewUser = (req, res, next) => {
       email,
       password: hash,
     })
-      .then(() => {
+      .then((newUser) => {
         return res
           .status(HTTP_STATUS_CREATED)
           .send({
-            name,
-            about,
-            avatar,
-            email,
+            name: newUser.name,
+            about: newUser.about,
+            avatar: newUser.avatar,
+            email: newUser.email,
           });
       })
       .catch((err) => {
