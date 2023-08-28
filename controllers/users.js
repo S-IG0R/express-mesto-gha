@@ -153,12 +153,12 @@ const login = (req, res, next) => {
         return res
           .status(HTTP_STATUS_OK)
           .send({ token });
-        // .cookie('jwt', token, {
+        // .cookie('jwt', token, {  // не работает из-за тестов: пустое тело
         //   maxAge: 3600000 * 24 * 7,
         //   httpOnly: true,
         //   sameSite: true,
         // })
-        // .end(); // печенье на 7 дней
+        // .end();
       });
     })
     .catch(next);
@@ -168,7 +168,7 @@ const getCurrentUser = (req, res, next) => {
   const { _id } = req.user;
   User.findOne({ _id })
     .then((currentUser) => {
-      res.status(200).send(currentUser);
+      res.status(HTTP_STATUS_OK).send(currentUser);
     })
     .catch(next);
 };

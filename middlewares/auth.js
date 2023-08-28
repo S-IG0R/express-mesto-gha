@@ -9,10 +9,12 @@ module.exports = (req, res, next) => {
   const token = authorization.replace('Bearer ', ''); // Убираем приставку Bearer
   let payload;
   try {
+    // если удалось верифицировать ключ, записывается _id в пейлоуд
     payload = jwt.verify(token, 'secret_key');
   } catch (err) {
     throw new UnauthorizedError('Необходима авторизация');
   }
+  // добавляем _id ко всем запросам
   req.user = payload;
   next();
 };

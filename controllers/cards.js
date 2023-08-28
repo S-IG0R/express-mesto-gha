@@ -50,23 +50,6 @@ const deleteCard = (req, res, next) => {
             .status(HTTP_STATUS_OK)
             .send({ message: 'Карточка удалена' });
         });
-      // .catch((err) => {
-      //   if (err.message === 'InvalidCardId') {
-      //     return res
-      //       .status(HTTP_STATUS_NOT_FOUND)
-      //       .send({ message: 'Запрашиваемая карточка не найдена' });
-      //   }
-      //   if (err instanceof mongoose.Error.CastError) {
-      //     next(new BadRequestError('Переданы некорректные данные'));
-      //     return res
-      //       .status(HTTP_STATUS_BAD_REQUEST)
-      //       .send({ message: 'Переданы некорректные данные' });
-      //   }
-      //   next(err)
-      // });
-      // return res
-      //   .status(HTTP_STATUS_INTERNAL_SERVER_ERROR)
-      //   .send({ message: 'Ошибка на сервере' });
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
@@ -81,7 +64,7 @@ const putLike = (req, res, next) => {
   return Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
-    { new: true },
+    { new: true }, // будет возвращать обновленные данные
   )
     .orFail(new NotFoundError('Запрашиваемая карточка не найдена'))
     .then((response) => {
