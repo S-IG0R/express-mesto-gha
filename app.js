@@ -17,14 +17,14 @@ mongoose
     console.log('Connected to MongoDB');
   });
 
+// ограничитель запросов к серверу
+app.use(limit);
+
 // защита от некоторых широко известных веб-уязвимостей
 app.use(helmet());
 
 // парсер тела запросов вместо body-parser
 app.use(express.json());
-
-// ограничитель запросов к серверу
-app.use(limit);
 
 // все руты приложения
 app.use(router);
@@ -32,7 +32,7 @@ app.use(router);
 // обработчик ошибок celebrate
 app.use(errors());
 
-// мидлвэр для центр. обработки ошибок
+// центр. обработки ошибок
 app.use(errorHandler);
 
 app.listen(PORT, () => {
