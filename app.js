@@ -5,7 +5,7 @@ const { errors } = require('celebrate');
 const limit = require('./middlewares/rateLimit'); // ограничитель запросов к серверу
 // const { celebrate, Joi } = require('celebrate');
 // const { createNewUser, login } = require('./controllers/users');
-const auth = require('./middlewares/auth');
+// const auth = require('./middlewares/auth');
 const router = require('./routes/index');
 const errorHandler = require('./middlewares/error-handler');
 
@@ -49,8 +49,8 @@ app.use(limit);
 //   createNewUser,
 // );
 
-app.use(auth);
 app.use(router);
+// app.use(auth);
 
 // обработчик ошибок celebrate
 app.use(errors());
