@@ -37,9 +37,9 @@ const getUserById = (req, res, next) => {
         err instanceof mongoose.Error.ValidationError
         || err instanceof mongoose.Error.CastError
       ) {
-        next(new BadRequestError('Переданы некорректные данные'));
+        return next(new BadRequestError('Переданы некорректные данные'));
       }
-      next(err);
+      return next(err);
     });
 };
 
@@ -75,12 +75,12 @@ const createNewUser = (req, res, next) => {
       })
       .catch((err) => {
         if (err.code === 11000) {
-          next(new ConflictError('Такой пользователь уже зарегистрирован'));
+          return next(new ConflictError('Такой пользователь уже зарегистрирован'));
         }
         if (err instanceof mongoose.Error.ValidationError) {
-          next(new BadRequestError('Переданы некорректные данные'));
+          return next(new BadRequestError('Переданы некорректные данные'));
         }
-        next(err);
+        return next(err);
       });
   });
 };
@@ -102,9 +102,9 @@ const updateProfile = (req, res, next) => {
         err instanceof mongoose.Error.CastError
         || err instanceof mongoose.Error.ValidationError
       ) {
-        next(new BadRequestError('Переданы некорректные данные'));
+        return next(new BadRequestError('Переданы некорректные данные'));
       }
-      next(err);
+      return next(err);
     });
 };
 
@@ -125,9 +125,9 @@ const updateAvatar = (req, res, next) => {
         err instanceof mongoose.Error.CastError
         || err instanceof mongoose.Error.ValidationError
       ) {
-        next(new BadRequestError('Переданы некорректные данные'));
+        return next(new BadRequestError('Переданы некорректные данные'));
       }
-      next(err);
+      return next(err);
     });
 };
 

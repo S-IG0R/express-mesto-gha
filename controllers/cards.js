@@ -28,9 +28,9 @@ const createCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
-        next(new BadRequestError('Переданы некорректные данные'));
+        return next(new BadRequestError('Переданы некорректные данные'));
       }
-      next(err);
+      return next(err);
     });
 };
 
@@ -42,8 +42,7 @@ const deleteCard = (req, res, next) => {
       if (card.owner.valueOf() !== req.user._id) {
         throw new ForbiddenError('Удаление чужой карточки запрещено');
       }
-
-      return Card.findByIdAndDelete(req.params.cardId)
+      return Card.deleteOne(card) // удаляет найденную карточку
         .orFail(new NotFoundError('Запрашиваемая карточка не найдена'))
         .then(() => {
           return res
@@ -53,9 +52,9 @@ const deleteCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
-        next(new BadRequestError('Переданы некорректные данные'));
+        return next(new BadRequestError('Переданы некорректные данные'));
       }
-      next(err);
+      return next(err);
     });
 };
 
@@ -72,9 +71,9 @@ const putLike = (req, res, next) => {
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
-        next(new BadRequestError('Переданы некорректные данные'));
+        return next(new BadRequestError('Переданы некорректные данные'));
       }
-      next(err);
+      return next(err);
     });
 };
 
@@ -91,9 +90,9 @@ const deleteLike = (req, res, next) => {
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
-        next(new BadRequestError('Переданы некорректные данные'));
+        return next(new BadRequestError('Переданы некорректные данные'));
       }
-      next(err);
+      return next(err);
     });
 };
 
