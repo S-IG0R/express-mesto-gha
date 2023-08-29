@@ -1,18 +1,14 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const helmet = require('helmet'); // защита от некоторых широко известных веб-уязвимостей
+const helmet = require('helmet');
 const { errors } = require('celebrate');
-const limit = require('./middlewares/rateLimit'); // ограничитель запросов к серверу
-// const { celebrate, Joi } = require('celebrate');
-// const { createNewUser, login } = require('./controllers/users');
-// const auth = require('./middlewares/auth');
+const limit = require('./middlewares/rateLimit');
 const router = require('./routes/index');
 const errorHandler = require('./middlewares/error-handler');
 
 const { PORT = 3000 } = process.env;
 const app = express();
 
-app.use(helmet()); // устанавл. заголовки безопасности
 mongoose
   .connect('mongodb://127.0.0.1:27017/mestodb', {
     useNewUrlParser: true,
@@ -21,36 +17,17 @@ mongoose
     console.log('Connected to MongoDB');
   });
 
-app.use(express.json()); // парсер тела запросов вместо body-parser
+// защита от некоторых широко известных веб-уязвимостей
+app.use(helmet());
+
+// парсер тела запросов вместо body-parser
+app.use(express.json());
+
+// ограничитель запросов к серверу
 app.use(limit);
-// app.post(
-//   '/signin',
-//   celebrate({
-//     body: Joi.object().keys({
-//       email: Joi.string().required().email(),
-//       password: Joi.string().required(),
-//     }),
-//   }),
-//   login,
-// );
 
-// app.post(
-//   '/signup',
-//   celebrate({
-//     body: Joi.object().keys({
-//       email: Joi.string().required().email(),
-//       password: Joi.string().required().min(8),
-//       about: Joi.string().min(2).max(30),
-//       avatar: Joi.string()
-//         .regex(/https?:\/\/.{1,}/),
-//       name: Joi.string().min(2).max(30),
-//     }),
-//   }),
-//   createNewUser,
-// );
-
+// все руты приложения
 app.use(router);
-// app.use(auth);
 
 // обработчик ошибок celebrate
 app.use(errors());

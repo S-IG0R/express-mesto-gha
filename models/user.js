@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const linkCheck = require('../utils/constants');
 
 const userSchema = new mongoose.Schema(
   {
@@ -17,7 +18,7 @@ const userSchema = new mongoose.Schema(
     },
     avatar: {
       type: String,
-      validate: /https?:\/\/.{1,}/,
+      validate: linkCheck,
       default:
         'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
     },
