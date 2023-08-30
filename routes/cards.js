@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
+const linkCheck = require('../utils/constants');
 
 const {
   getAllCards,
@@ -27,7 +28,7 @@ router.post(
     body: Joi.object().keys({
       name: Joi.string().required().min(2).max(30),
       link: Joi.string()
-        .regex(/https?:\/\/.{1,}/)
+        .regex(linkCheck)
         .required(),
     }),
     headers: Joi.object()
